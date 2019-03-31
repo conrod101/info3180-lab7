@@ -33,7 +33,7 @@ def index(path):
 
 
 @app.route('/api/upload',methods=['POST'])
-def uploaf():
+def upload():
     forms = UploadForm()
     if request.methods == 'POST' and forms.validate_on_submit():
         description = forms.description.data
@@ -42,9 +42,17 @@ def uploaf():
         filename = secure_filename(photo.filename)
         photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         
-        return jsonify({ "message": "File Upload Successful", "filename": filename, "description": "Some description for your image"})
-    error = form_errors(forms)
-    return jsonify ({"Errors: ":error})
+        # return jsonify({ 'message': 'File Upload Successful', 'filename': filename, 'description': description})
+        imageI = {"message":"File Upload Successful","filename":filename,"description":description}
+        info_img= jsonify(imageI)
+        return info_img
+                    
+
+    errors_list = []
+    for error in form_errors(forms):
+        errors_list.append(dict({'error':error}))
+
+    return jsonify({'Errors':errors_list})
 
 
 
