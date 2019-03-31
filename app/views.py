@@ -32,28 +32,30 @@ def index(path):
     return render_template('index.html')
 
 
-@app.route('/api/upload',methods=['POST'])
+@app.route('/api/upload',methods = ['POST'])
 def upload():
-    forms = UploadForm()
-    if request.methods == 'POST' and forms.validate_on_submit():
-        description = forms.description.data
-        photo = forms.photo.data
+    """Uploads Form and returns JSON output"""
+    form = UploadForm()
+    
+    if request.method == 'POST' and form.validate_on_submit():
+        description = form.description.data
+        photo       = form.photo.data
+        filename    = secure_filename(photo.filename)
+        photo.save('app/static/photos/' + filename)
         
-        filename = secure_filename(photo.filename)
-        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        
-        # return jsonify({ 'message': 'File Upload Successful', 'filename': filename, 'description': description})
-        imageI = {"message":"File Upload Successful","filename":filename,"description":description}
-        info_img= jsonify(imageI)
-        return info_img
+        photoInfo = {"message":"File Upload Successful",\
+                     "filename":filename,\
+                     "description":description
+                    }
                     
-
-    errors_list = []
-    for error in form_errors(forms):
-        errors_list.append(dict({'error':error}))
-
-    return jsonify({'Errors':errors_list})
-
+        info = jsonify(photoInfo)
+        return info
+    
+    errorList = []
+    for error in form_errors(form):
+        errorList.append(dict({'error':error}))
+        
+    return jsonify({'Errors':errorList})
 
 
 # Here we define a function to collect form errors from Flask-WTF
@@ -70,7 +72,6 @@ def form_errors(form):
             error_messages.append(message)
 
     return error_messages
-
 
 ###
 # The functions below should be applicable to all Flask apps.
